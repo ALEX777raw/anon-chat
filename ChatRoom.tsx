@@ -1,11 +1,9 @@
 
-// @ts-nocheck
 import React, { useState, useEffect, useRef } from 'react';
-import { Message, TypingEvent } from '../types';
-import { socketService } from '../services/mockSocketService';
+import { Message, TypingEvent } from './types';
+import { socketService } from './mockSocketService';
 import { Button } from './Button';
 import { Send, Clock, Copy, Check, Edit2, Loader2, LogOut, Paperclip, FileText, Download, ShieldAlert } from 'lucide-react';
-import { BackgroundLogo } from './BackgroundLogo';
 
 interface ChatRoomProps {
   roomId: string;

@@ -1,5 +1,5 @@
-// @ts-nocheck
-import { Message, TypingEvent, JoinRequestEvent, JoinResponseEvent } from '../types';
+
+import { Message, TypingEvent, JoinRequestEvent, JoinResponseEvent } from './types';
 
 // This class simulates a WebSocket server for the purpose of this demo.
 // In a real application, this would be replaced by `socket.io-client` or native `WebSocket`.

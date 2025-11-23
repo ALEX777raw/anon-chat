@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 export interface User {
   id: string;
   displayName: string; // e.g., "Guest 1"

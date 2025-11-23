@@ -1,5 +1,4 @@
 
-// @ts-nocheck
 import React from 'react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
