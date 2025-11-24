@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { Welcome } from './components/Welcome';
-import { ChatRoom } from './components/ChatRoom';
-import { Header } from './components/Header';
-import { socketService } from './services/mockSocketService';
-import { IntroAnimation } from './components/IntroAnimation';
+import { Welcome } from './Welcome';
+import { ChatRoom } from './ChatRoom';
+import { Header } from './Header';
+import { socketService } from './mockSocketService';
+import { IntroAnimation } from './IntroAnimation';
 
 const App: React.FC = () => {
   const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);

@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import type { Message, TypingEvent } from '@/types';
-import { socketService } from '@/services/mockSocketService';
-import { Copy, Check, Edit2, LogOut, Paperclip, FileText, Download, Activity, ArrowUp, ShieldCheck } from 'lucide-react';
+import { Message, TypingEvent } from './types';
+import { socketService } from './mockSocketService';
+import { Copy, Check, Edit2, LogOut, Paperclip, FileText, Download, Activity, ArrowUp, ShieldCheck, AlertTriangle, RefreshCw, Network, Zap } from 'lucide-react';
 import { VoidBackground } from './VoidBackground';
 
 interface ChatRoomProps {
@@ -60,12 +60,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
     window.location.hash = '';
   };
 
-  useEffect(() => {
-    setMessages([]);
+  const connectToRoom = (id: string) => {
     setStatus('connecting');
     socketService.connect(
-      roomId,
-      (msg: Message) => setMessages((prev) => [...prev, msg]),
+      id,
+      (msg) => {
+         setMessages((prev) => {
+             // De-duplicate just in case broadcast reflects self
+             if (prev.some(m => m.id === msg.id)) return prev;
+             return [...prev, msg];
+         });
+      },
       (evt: TypingEvent) => {
         setTypingUsers((prev) => {
             const newSet = new Set(prev);
@@ -73,10 +78,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
             return newSet;
         });
       },
-      (newStatus) => setStatus(newStatus)
+      (newStatus: string) => {
+         setStatus(newStatus as any);
+      }
     );
-    return () => socketService.disconnect();
+  };
+
+  useEffect(() => {
+    setMessages([]);
+    connectToRoom(roomId);
+    return () => {
+        socketService.disconnect();
+    };
   }, [roomId]);
+
+  const handleForceReconnect = () => {
+    socketService.disconnect();
+    setTimeout(() => {
+        connectToRoom(roomId);
+    }, 500);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const text = e.target.value;
@@ -104,7 +125,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 500 * 1024) { alert("File limit: 500KB"); return; }
+    // Limit for Supabase Realtime broadcast payload is usually small (6MB), keep safely under 1MB for base64
+    if (file.size > 1024 * 1024) { alert("File limit: 1MB (Broadcast limit)"); return; }
+    
     const reader = new FileReader();
     reader.onload = (event) => {
         if (event.target?.result) {
@@ -146,13 +169,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
       <div className="flex flex-col items-center justify-center min-h-screen text-center p-4 relative bg-black text-white overflow-hidden">
         <VoidBackground />
         <div className="absolute inset-0 bg-black/80 z-0" />
-        <div className="relative z-10 max-w-md w-full border border-white/10 p-10 bg-black/50 backdrop-blur-xl rounded-3xl">
-          <Activity className="w-12 h-12 text-zinc-500 mx-auto mb-6" />
-          <h2 className="text-2xl font-bold mb-2 tracking-tighter text-white">VOID STATE</h2>
-          <p className="text-zinc-500 text-sm mb-8 font-mono">Connection severed.</p>
-          <button onClick={() => window.location.hash = ''} className="px-8 py-3 bg-white text-black rounded-full text-xs font-bold tracking-widest hover:bg-zinc-200 transition-colors">
-            RETURN
-          </button>
+        <div className="relative z-10 max-w-md w-full border border-white/10 p-10 bg-black/50 backdrop-blur-xl rounded-3xl animate-fade-in shadow-2xl">
+          <AlertTriangle className="w-12 h-12 text-zinc-500 mx-auto mb-6" />
+          <h2 className="text-2xl font-bold mb-2 tracking-tighter text-white">CONNECTION LOST</h2>
+          <p className="text-zinc-500 text-xs mb-8 font-mono uppercase leading-relaxed">
+            Link severed.<br/>
+            Please check your configuration or internet connection.
+          </p>
+          <div className="flex flex-col gap-3">
+             <button onClick={handleForceReconnect} className="px-8 py-3 bg-white text-black rounded-full text-xs font-bold tracking-widest hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2">
+                <RefreshCw className="w-3 h-3" /> RECONNECT
+             </button>
+             <button onClick={() => window.location.reload()} className="px-8 py-3 bg-black border border-zinc-800 text-zinc-400 rounded-full text-xs font-bold tracking-widest hover:bg-zinc-900 transition-colors">
+                FULL RELOAD
+             </button>
+          </div>
         </div>
       </div>
     );
@@ -167,16 +198,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
       {/* Top Bar - Void Glass Panel */}
       <div className="absolute top-6 left-4 right-4 z-20 flex justify-between items-center">
         <div className="flex items-center gap-4 bg-black/40 backdrop-blur-xl border border-white/10 p-2 pr-6 rounded-full shadow-lg">
-            {/* Status Indicator - Monochrome */}
-            <div className={`w-3 h-3 rounded-full ml-2 border ${status === 'connected' ? 'bg-white border-white shadow-[0_0_10px_white]' : 'bg-transparent border-zinc-500 animate-pulse'}`} />
+            {/* Status Indicator */}
+            <div className={`w-3 h-3 rounded-full ml-2 border transition-all duration-500 ${status === 'connected' ? 'bg-white border-white shadow-[0_0_10px_white]' : 'bg-transparent border-zinc-600 animate-pulse'}`} />
             
             <div className="flex flex-col">
                 <span className="font-mono text-[9px] text-zinc-500 tracking-widest uppercase leading-none mb-1">
-                    {status === 'connected' ? 'P2P ENCRYPTED' : 'SEARCHING...'}
+                    {status === 'connected' ? 'SECURE CHANNEL' : 'CONNECTING...'}
                 </span>
                 <span className="font-bold text-xs tracking-wider text-white font-mono">{roomId}</span>
             </div>
-            {status === 'connected' && <ShieldCheck className="w-3 h-3 text-white ml-2" />}
+            {status === 'connected' && <Zap className="w-3 h-3 text-white ml-2" />}
         </div>
         
         {/* Name Editor */}
@@ -211,14 +242,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
         </div>
       </div>
 
-      {/* Messages Area - Monochrome */}
+      {/* Messages Area */}
       <div className="flex-1 overflow-y-auto pt-24 pb-4 px-4 sm:px-8 space-y-6 scrollbar-hide relative z-10">
-        {messages.length === 0 && status !== 'connected' && (
+        {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full opacity-30">
                 <div className="w-16 h-16 border border-white/20 rounded-full flex items-center justify-center animate-pulse mb-4">
                     <Activity className="w-6 h-6 text-white" />
                 </div>
-                <p className="text-[10px] font-mono tracking-[0.4em] uppercase text-zinc-500">Searching Frequency...</p>
+                <p className="text-[10px] font-mono tracking-[0.4em] uppercase text-zinc-500">
+                    {status === 'connected' ? 'CHANNEL OPEN. WAITING FOR SIGNAL.' : 'ESTABLISHING UPLINK...'}
+                </p>
             </div>
         )}
 
@@ -238,7 +271,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
               {!isMe && <div className="text-[9px] text-zinc-600 mb-1 font-mono tracking-widest uppercase ml-2">{msg.senderName}</div>}
               
               <div className={`max-w-[85%] sm:max-w-[65%] relative group`}>
-                {/* Monochrome Bubble Style */}
                 <div className={`relative px-5 py-3 rounded-2xl backdrop-blur-md transition-all duration-300 border
                     ${isMe 
                         ? 'border-white bg-white text-black rounded-br-sm shadow-[0_0_15px_rgba(255,255,255,0.1)]' 
@@ -287,11 +319,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
                 <div className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                 <div className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
             </div>
-            INCOMING SIGNAL
+            TRANSMISSION DETECTED
         </div>
       )}
 
-      {/* Input - Floating Void Capsule */}
+      {/* Input */}
       <div className="p-4 sm:p-6 shrink-0 relative z-20 flex justify-center bg-gradient-to-t from-black via-black/90 to-transparent">
         <form onSubmit={handleSendMessage} className="relative flex items-center w-full max-w-2xl bg-black/80 backdrop-blur-2xl border border-white/20 rounded-full shadow-2xl p-1.5 gap-2 transition-all focus-within:border-white focus-within:shadow-[0_0_20px_rgba(255,255,255,0.1)]">
             <input 
@@ -316,6 +348,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
                     placeholder="Input transmission..."
                     className="w-full bg-transparent text-white placeholder-zinc-600 border-none focus:outline-none focus:ring-0 px-2 text-sm font-light tracking-wide"
                     autoFocus
+                    autoComplete="off"
                 />
             </div>
 

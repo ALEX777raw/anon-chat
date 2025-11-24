@@ -1,9 +1,0 @@
-/* Global reset helpers for Vite build to locate stylesheet */
-* {
-  box-sizing: border-box;
-}
-
-html, body {
-  margin: 0;
-  padding: 0;
-}

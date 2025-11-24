@@ -4,7 +4,6 @@
     "experimentalDecorators": true,
     "useDefineForClassFields": false,
     "module": "ESNext",
-    "baseUrl": ".",
     "lib": [
       "ES2022",
       "DOM",
@@ -12,9 +11,7 @@
     ],
     "skipLibCheck": true,
     "types": [
-      "node",
-      "react",
-      "react-dom"
+      "node"
     ],
     "moduleResolution": "bundler",
     "isolatedModules": true,

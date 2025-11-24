@@ -76,6 +76,10 @@ export const Welcome: React.FC<WelcomeProps> = ({ onCreateRoom, onJoinRoom }) =>
                         onChange={(e) => setJoinId(e.target.value)}
                         placeholder="FREQUENCY ID"
                         className="w-full bg-transparent border-none text-zinc-300 placeholder-zinc-700 text-xs py-4 pl-3 pr-14 focus:outline-none focus:ring-0 font-mono tracking-wider uppercase"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        autoComplete="off"
+                        spellCheck="false"
                     />
                     <button 
                         type="submit" 
