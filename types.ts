@@ -1,7 +1,7 @@
 
 export interface User {
   id: string;
-  displayName: string; // e.g., "Guest 1"
+  displayName: string;
   isSelf: boolean;
 }
 
@@ -32,18 +32,4 @@ export interface TypingEvent {
   senderName: string;
   isTyping: boolean;
   type: 'typing';
-}
-
-export interface JoinRequestEvent {
-  roomId: string;
-  candidateId: string;
-  candidateName: string;
-  type: 'join_request';
-}
-
-export interface JoinResponseEvent {
-  roomId: string;
-  candidateId: string;
-  status: 'approved' | 'denied';
-  type: 'join_response';
 }

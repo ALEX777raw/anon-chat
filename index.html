@@ -1,46 +1,112 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Архитектура</title>
+    <title>Protocol - Secure Messenger</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            animation: {
-              'slow-spin': 'spin 20s linear infinite',
-              'slide-up': 'slideUp 0.6s ease-out forwards'
-            },
-            keyframes: {
-              slideUp: {
-                '0%': { opacity: '0', transform: 'translateY(10px)' },
-                '100%': { opacity: '1', transform: 'translateY(0)' }
-              }
-            }
-          }
-        }
-      };
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-      /* Custom utility classes that Tailwind CDN won't generate automatically */
-      .glass-panel {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(18px);
-        -webkit-backdrop-filter: blur(18px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #09090b; /* Zinc 950 */
+        color: #e4e4e7; /* Zinc 200 */
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
       }
+      /* Custom scrollbar for chat */
       .scrollbar-hide::-webkit-scrollbar {
-        display: none;
+          display: none;
       }
       .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+      }
+
+      /* Animations */
+      @keyframes slideInUp {
+        from { opacity: 0; transform: translateY(20px) scale(0.95); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      
+      .animate-slide-up {
+        animation: slideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.8s ease-in forwards;
+      }
+
+      /* Glitch Effect Keyframes */
+      @keyframes glitch-anim {
+        0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 1px); }
+        20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); }
+        40% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 2px); }
+        60% { clip-path: inset(80% 0 5% 0); transform: translate(2px, -2px); }
+        80% { clip-path: inset(10% 0 70% 0); transform: translate(-1px, 1px); }
+        100% { clip-path: inset(30% 0 50% 0); transform: translate(1px, -1px); }
+      }
+
+      .glitch-hover:hover {
+        animation: glitch-anim 0.3s infinite linear alternate-reverse;
+      }
+
+      .glass-panel {
+        background: rgba(9, 9, 11, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      @keyframes slow-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      .animate-slow-spin {
+        animation: slow-spin 60s linear infinite;
+      }
+      
+      /* Loading State */
+      #root:empty {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        color: #52525b;
+        font-family: monospace;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-size: 12px;
+      }
+      #root:empty::after {
+        content: "Initializing Protocol...";
+        animation: pulse 1.5s infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
       }
     </style>
-  </head>
-  <body class="min-h-screen bg-[#09090b]">
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "react-dom": "https://esm.sh/react-dom@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "lucide-react": "https://esm.sh/lucide-react@0.554.0?external=react",
+    "trystero": "https://esm.sh/trystero@0.19.0/mqtt"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
